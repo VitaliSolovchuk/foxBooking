@@ -19,6 +19,7 @@ import Tooltip from '@mui/material/Tooltip';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 /*
@@ -136,27 +137,27 @@ EnhancedTableHead.propTypes = {
 };
 
 const EnhancedTableToolbar = (props) => {
-  const { numSelected } = props;
-
+  const { record, setRecord, selected, tableLabel } = props;
+  const isSetRecord = (!!selected || !!record)
   return (
     <Toolbar
       sx={{
         pl: { sm: 2 },
         pr: { xs: 1, sm: 1 },
-        ...(numSelected > 0 && {
+        ...( isSetRecord && {
           bgcolor: (theme) =>
             alpha(theme.palette.primary.main, theme.palette.action.activatedOpacity),
         }),
       }}
     >
-      {numSelected > 0 ? (
+      {isSetRecord ? (
         <Typography
           sx={{ flex: '1 1 100%' }}
           color="inherit"
           variant="subtitle1"
           component="div"
         >
-          {numSelected} selected
+          1 selected
         </Typography>
       ) : (
         <Typography
@@ -165,16 +166,23 @@ const EnhancedTableToolbar = (props) => {
           id="tableTitle"
           component="div"
         >
-          Nutrition
+          {tableLabel[0].toUpperCase() + tableLabel.slice(1)}
         </Typography>
       )}
 
-      {numSelected > 0 ? (
+      {isSetRecord ? (
+        <div style={{display: 'flex'}}>
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton disabled={!!selected} onClick={(event) => setRecord(event, 'delete')}>
             <DeleteIcon/>
           </IconButton>
         </Tooltip>
+        <Tooltip title="Write">
+          <IconButton disabled={!!record} onClick={(event) => setRecord(event,'set', selected)}>
+            <SaveIcon/>
+          </IconButton>
+        </Tooltip>
+        </div>
       ) : (
         <Tooltip title="Filter list">
           <IconButton>
@@ -187,10 +195,10 @@ const EnhancedTableToolbar = (props) => {
 };
 
 EnhancedTableToolbar.propTypes = {
-  numSelected: PropTypes.number.isRequired,
+  selected: PropTypes.object.isRequired,
 };
 
-export default function EnhancedTable({ columns, values }) {
+export default function EnhancedTable({ record, setRecord, tableLabel, columns, values }) {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('name');
   const [selected, setSelected] = React.useState([]);
@@ -214,9 +222,9 @@ export default function EnhancedTable({ columns, values }) {
     const selectedIndex = selected.indexOf(name);
     let newSelected = [];
 
-    if (selectedIndex === -1) {
+    if (selectedIndex === -1 && !record) { //
       newSelected = newSelected.concat([], name);
-    } else if (selectedIndex === 0) {
+    } else if (selectedIndex === 0 && record) {
       newSelected = newSelected.concat(selected.slice(1));
     } else {
       newSelected = newSelected.concat([]);
@@ -238,7 +246,7 @@ export default function EnhancedTable({ columns, values }) {
     setDense(event.target.checked);
   };
 
-  const isSelected = (name) => selected.indexOf(name) !== -1;
+  const isSelected = (id) => selected.indexOf(id) !== -1 || record === id;
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -247,7 +255,12 @@ export default function EnhancedTable({ columns, values }) {
   return (
     <Box sx={{ width: '100%' }}>
       <Paper sx={{ width: '100%', mb: 2 }}>
-        <EnhancedTableToolbar numSelected={selected.length}/>
+        <EnhancedTableToolbar
+          record={record}
+          setRecord={setRecord}
+          selected={selected?.[0]}
+          tableLabel={tableLabel}
+        />
         <TableContainer>
           <Table
             sx={{ minWidth: 750 }}
@@ -269,13 +282,13 @@ export default function EnhancedTable({ columns, values }) {
               {stableSort(rows, getComparator(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row, index) => {
-                  const isItemSelected = isSelected(row.name);
+                  const isItemSelected = isSelected(row.id);
                   const labelId = `enhanced-table-checkbox-${index}`;
 
                   return (
                     <TableRow
                       hover
-                      onClick={(event) => handleClick(event, row.name)}
+                      onClick={(event) => handleClick(event, row.id)}
                       role="checkbox"
                       aria-checked={isItemSelected}
                       tabIndex={-1}
