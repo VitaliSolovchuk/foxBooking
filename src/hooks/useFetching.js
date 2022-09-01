@@ -8,7 +8,7 @@ export const useFetching = (callBack) => {
   const fetching = async () => {
     try {
       setIsLoading(true)
-      await callBack()
+      return await callBack()
     } catch (e) {
       setError(e.message)
     } finally {

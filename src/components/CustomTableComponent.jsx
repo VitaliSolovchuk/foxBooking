@@ -159,14 +159,18 @@ const EnhancedTableToolbar = (props) => {
       {isSetRecord ? (
         <div style={{display: 'flex'}}>
         <Tooltip title="Delete">
-          <IconButton disabled={!!selected} onClick={handleDelete}>
-            <DeleteIcon/>
-          </IconButton>
+          <div>
+            <IconButton disabled={!!selected} onClick={handleDelete}>
+              <DeleteIcon/>
+            </IconButton>
+          </div>
         </Tooltip>
         <Tooltip title="Write">
-          <IconButton disabled={!!record} onClick={handleSave}>
-            <SaveIcon/>
-          </IconButton>
+          <div>
+            <IconButton disabled={!!record} onClick={handleSave}>
+              <SaveIcon/>
+            </IconButton>
+          </div>
         </Tooltip>
         </div>
       ) : (
@@ -181,7 +185,7 @@ const EnhancedTableToolbar = (props) => {
 };
 
 EnhancedTableToolbar.propTypes = {
-  selected: PropTypes.object.isRequired,
+  // selected: PropTypes.number.isRequired,
 };
 
 export default function EnhancedTable({ record, setRecord, tableLabel, columns, rows }) {

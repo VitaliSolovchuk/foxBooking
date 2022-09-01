@@ -12,7 +12,9 @@ const style = {
 const ModalWithLoader = ({isView}) => {
   return (
     <Modal open={isView} >
-      <CircularIndeterminate sx={style}></CircularIndeterminate>
+      <div>
+        <CircularIndeterminate sx={style}></CircularIndeterminate>
+      </div>
     </Modal>
   );
 };

@@ -1,29 +1,32 @@
 import './App.css';
 import Controller from "./controllers/Controller";
-import { useAsync } from "react-async"
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ModalWithLoader from "./components/ModalWithLoader";
 import ModuleWithInstance from "./components/ModuleWithInstance";
+import { useFetching } from "./hooks/useFetching";
 
 function App() {
 
 
   const [isLoad, setIsLoad] = useState(false);
-  const { ControllerWithInstance, error, isPending } = useAsync(Controller)
+  const [fetchingController, isLoadingController, errorController] = useFetching(async () => await Controller)
+  const [controller, setController] = useState(null)
 
+  useEffect(() => {
+    fetchingController()
+      .then(res => setController(res))
+  },[])
 
-return (
-  <div>
-    <ModalWithLoader isView={isLoad || isPending}/>
+  return (<div>
+      <ModalWithLoader isView={isLoad || isLoadingController}/>
 
-    <ModuleWithInstance
-      Controller={ControllerWithInstance}
-      setIsLoad={setIsLoad}
-    ></ModuleWithInstance>
+      {controller && <ModuleWithInstance
+        controller={controller}
+        setIsLoad={setIsLoad}
+      ></ModuleWithInstance>}
 
-    {error && <div>ОШИБКА</div>}
-  </div>
-)
+      {!!errorController && <div>errorController</div>}
+    </div>)
 
 }
 
