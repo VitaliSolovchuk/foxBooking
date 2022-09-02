@@ -16,11 +16,9 @@ class Controller {
     this.bitrixService = new BitrixService(async_params.BITRIX_DEAL)
   }
 
-  static async build(dealId = '119243') {
-    // await delay(2000)
+  static async build(dealId = '120391') { //119243   120391
 
     if (!this.instance) {
-
       // const ALFA_TOKEN = (await AlfaService.getToken()).data.token;
       // const BITRIX_DEAL = (await BitrixService.getDeal(dealId)).data.result;
       const ALFA_TOKEN = await AlfaService.getToken()
@@ -36,13 +34,16 @@ class Controller {
     const record = this.bitrixService.getRecords()
     return record
   }
+  getDealConfig() {
+    const record = this.bitrixService.getDealConfig()
+    return record
+  }
 
   async getSkillGroups(dealType = 'skills', format) {
-    console.log("Controller, getSkillGroups")
+    // console.log("Controller, getSkillGroups")
     const note = `${format || ""}-${dealType || ""}`
 
     const filter = {
-      name: 'Apollo',
       "status_id": 1,   // идет набор
       "note": note,     // вид сделки и формат занятий
       "pageSize": 50
@@ -77,6 +78,47 @@ class Controller {
     })
     return allGroups;
   }
+  async getGroups(dealType) {
+    // console.log("getGroups")
+
+    const filter = {
+      "name": dealType,
+      "status_id": 1,   // идет набор
+      "pageSize": 50
+    }
+    console.log(filter)
+    const result = await this.alfaService.getGroups(filter)
+
+    const allGroups = result.data.items
+    allGroups.forEach(group => {
+      // injection timetable from alfa_regulars
+      // TODO get regulars
+      group.timetable = alfa_regulars.filter(reg => reg.related_id === group.id)
+
+      group.timetableStr = AlfaService.getGroupTimetable(group.timetable)
+      group.labelStr = AlfaService.getGroupLabel(group)
+
+      // injection roomStr
+      const roomId = group?.timetable?.[0]?.['room_id']
+      group.roomId = roomId
+      if (roomId) {
+        const room = alfa_rooms.find(el => el.id === roomId)
+        group.roomStr = room?.note
+      }
+
+      // injection startDateStr
+      let options = {
+        year: 'numeric', month: 'long', day: 'numeric',
+      }
+      group.startDateStr = new Date(group['b_date'].split('.').reverse().join(',')).toLocaleString("ru", options)
+
+      // TODO freeSeats
+      group.freeSeats = `*/${group.limit}`
+
+    })
+    return allGroups;
+  }
+
   async setListCustomersInGroups(groups) {
     // participants
     const newGroups = []
@@ -94,13 +136,12 @@ class Controller {
     }
     return newGroups
   }
-
   async saveToGroup(group) { //customerId
     console.log("Controller, saveToGroup")
     const customerId = this.bitrixService.customerId
 
     const promiseAlfa = this.alfaService.addCustomerToGroup(group.id, customerId)
-    const promiseBitrix = this.bitrixService.writeInGroup(group.id, group.name + ' с расписанием: ' + group.timetableStr, group.b_date)
+    const promiseBitrix = this.bitrixService.writeInGroupSkills(group.id, group.name, group.timetableStr, group.b_date)
 
     await Promise.all([promiseAlfa, promiseBitrix])
     // TODO check
@@ -115,7 +156,7 @@ class Controller {
     const customerRec = customersInGroup.find(customerRec => customerRec.customer_id === customerId)
 
     const promiseAlfa = this.alfaService.deleteCustomerFromGroup(customerRec.id, groupId)
-    const promiseBitrix = this.bitrixService.writeInGroup('', '', '')
+    const promiseBitrix = this.bitrixService.writeInGroupSkills('', '','', '')
 
     const [res, res2] = await Promise.all([promiseAlfa, promiseBitrix])
     console.log(res, res2)
@@ -133,7 +174,7 @@ class Controller {
 
 }
 
-export default Controller.build();
+export default Controller;
 
 
 function delay(delayInms) {

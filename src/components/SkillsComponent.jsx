@@ -16,8 +16,14 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
       setRecords({ ...records, [lessonType]: {id: recordSkills, label: group.labelStr} })
     } else {
       // TODO find group ID
-      await controller.deleteFromGroup(records[lessonType].id)
-      setRecords({ ...records, [lessonType]: {} })
+      if(records[lessonType].isOld){
+        // TODO find by name
+        alert('ещё не прикрутили')
+      }else{
+        await controller.deleteFromGroup(records[lessonType].id)
+        setRecords({ ...records, [lessonType]: {} })
+      }
+
     }
     setIsLoad(false)
 
@@ -46,7 +52,7 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
   }, [isGroupsLoading])
 
   if(!groups || groups.length === 0){
-    return <div></div>
+    return <div>ПУСТО</div>
   }
 
   return (<div>
@@ -58,8 +64,8 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
       tableLabel={tableLabel}
     />
 
-    {groupsErr && <div>ОШИБКА</div>}
-    {isGroupsLoading && <div>ОШИБКА</div>}
+    {/*{groupsErr && <div>ОШИБКА</div>}*/}
+    {/*{isGroupsLoading && <div>ОШИБКА</div>}*/}
   </div>);
 }
 

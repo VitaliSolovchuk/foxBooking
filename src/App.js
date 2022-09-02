@@ -5,11 +5,11 @@ import ModalWithLoader from "./components/ModalWithLoader";
 import ModuleWithInstance from "./components/ModuleWithInstance";
 import { useFetching } from "./hooks/useFetching";
 
-function App() {
+function App({dealId}) {
 
 
   const [isLoad, setIsLoad] = useState(false);
-  const [fetchingController, isLoadingController, errorController] = useFetching(async () => await Controller)
+  const [fetchingController, isLoadingController, errorController] = useFetching(async () => await Controller.build(dealId))
   const [controller, setController] = useState(null)
 
   useEffect(() => {
@@ -22,6 +22,7 @@ function App() {
 
       {controller && <ModuleWithInstance
         controller={controller}
+        isLoad={isLoad}
         setIsLoad={setIsLoad}
       ></ModuleWithInstance>}
 

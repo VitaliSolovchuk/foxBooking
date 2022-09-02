@@ -5,7 +5,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 
-const SelectComponent = ({name, value, setValue, values}) => {
+const SelectComponent = ({name, value, setValue, values, disabled}) => {
 
 
   return (
@@ -13,6 +13,7 @@ const SelectComponent = ({name, value, setValue, values}) => {
       <FormControl fullWidth>
         <InputLabel id="demo-simple-select-label">{name}</InputLabel>
         <Select
+          disabled={disabled}
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={value}

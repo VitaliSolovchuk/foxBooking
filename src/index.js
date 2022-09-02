@@ -5,4 +5,7 @@ import App from './App';
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<App/>);
+// TODO comment for deploy
+// const CUSTOM_REQUEST={DEAL: {ID: 120001}}
+// eslint-disable-next-line no-undef
+root.render(<App dealId={CUSTOM_REQUEST.DEAL.ID}/>);

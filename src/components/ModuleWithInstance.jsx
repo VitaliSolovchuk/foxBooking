@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import SkillsComponent from "./SkillsComponent";
 import HeaderComponent from "./HeaderComponent";
+import GroupsComponent from "./GroupsComponent";
 
-const ModuleWithInstance = ({controller, setIsLoad}) => {
+const ModuleWithInstance = ({controller, isLoad, setIsLoad}) => {
 
 
-  const [lessonConfig, setLessonConfig] = useState({ lessonFormat: "", lessonType: "" });
-
-  const records2 = controller.getRecords()
-  const [records, setRecords] = useState(records2); //{ skills: {id: "", name: ""} }
+  const getRecords = controller.getRecords()
+  const getDealConfig = controller.getDealConfig()
+  const [lessonConfig, setLessonConfig] = useState(getDealConfig);//{ lessonFormat: "", lessonType: "" }
+  const [records, setRecords] = useState(getRecords); //{ skills: {id: "", name: ""} }
 
   return (<div className="App">
     <HeaderComponent
@@ -27,13 +28,17 @@ const ModuleWithInstance = ({controller, setIsLoad}) => {
           setIsLoad={setIsLoad}
         />}
 
-        {/*        {lessonConfig.lessonType === 'group' &&
-          <TableComponent clumns={groupColumnNames} values={groups}></TableComponent>
-        }
+        {lessonConfig.lessonType === 'group' && lessonConfig.lessonFormat && <GroupsComponent
+          lessonConfig={lessonConfig}
+          records={records}
+          setRecords={setRecords}
+          controller={controller}
+          setIsLoad={setIsLoad}
+        />}
 
-        {lessonConfig.lessonType === 'trial' &&
-          <TableComponent clumns={trialColumnNames} values={lessons}></TableComponent>
-        }*/}
+        {/*{lessonConfig.lessonType === 'trial' &&*/}
+        {/*  <TableComponent clumns={trialColumnNames} values={lessons}></TableComponent>*/}
+        {/*}*/}
 
       </div>
     </div>
