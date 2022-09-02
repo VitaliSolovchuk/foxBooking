@@ -10,6 +10,18 @@ export default class BitrixService {
       (bitrix_levels.find(level => +level.VALUE === +DEAL['UF_CRM_1593865305969'])).NAME
   }
 
+  getRecords(){
+
+    const _groupId = 'UF_CRM_1612747156'
+    const _groupTime = 'UF_CRM_1595213756897'
+
+    return {
+      skills: {
+        id: +this.DEAL[_groupId],
+        label: this.DEAL[_groupTime]
+      }
+    }
+  }
   static async getDeal(dealId) {
 
     const method = 'crm.deal.get'

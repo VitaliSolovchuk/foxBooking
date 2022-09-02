@@ -32,27 +32,31 @@ class Controller {
 
     return this.instance;
   }
+  getRecords() {
+    const record = this.bitrixService.getRecords()
+    return record
+  }
 
   async getSkillGroups(dealType = 'skills', format) {
     console.log("Controller, getSkillGroups")
     const note = `${format || ""}-${dealType || ""}`
 
     const filter = {
+      name: 'Apollo',
       "status_id": 1,   // идет набор
       "note": note,     // вид сделки и формат занятий
       "pageSize": 50
     }
-    const result = await this.alfaService.getGroups()
+    const result = await this.alfaService.getGroups(filter)
 
     const allGroups = result.data.items
     allGroups.forEach(group => {
       // injection timetable from alfa_regulars
+      // TODO get regulars
       group.timetable = alfa_regulars.filter(reg => reg.related_id === group.id)
 
-      group.timetableStr = ''
-      group.timetable.forEach(tm => {
-        group.timetableStr += '(' + Controller._getWeekDay(tm['day']) + ')' + tm['time_from_v'] + '-' + tm['time_to_v'] + ' '
-      })
+      group.timetableStr = AlfaService.getGroupTimetable(group.timetable)
+      group.labelStr = AlfaService.getGroupLabel(group)
 
       // injection roomStr
       const roomId = group.timetable?.[0]['room_id']
@@ -73,43 +77,59 @@ class Controller {
     })
     return allGroups;
   }
+  async setListCustomersInGroups(groups) {
+    // participants
+    const newGroups = []
+    for (const group of groups) {
+      if(newGroups.length > 1){
+        // ограничение на 5 запросов в alfaCrm на стороне альфы
+        await delay(200)
+      }
+
+    const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(group.id)
+    const customersInGroup = customersInGroupResponse.data.items
+      group.participants = customersInGroup
+      group.freeSeats = `${customersInGroup.length}/${group.limit}`
+      newGroups.push(group)
+    }
+    return newGroups
+  }
 
   async saveToGroup(group) { //customerId
     console.log("Controller, saveToGroup")
     const customerId = this.bitrixService.customerId
 
-    await this.alfaService.addCustomerToGroup(this.ALFA_TOKEN, group.id, customerId)
-    await this.bitrixService.writeInGroup(group.id, group.name + ' с расписанием: ' + group.timetableStr, group.b_date)
+    const promiseAlfa = this.alfaService.addCustomerToGroup(group.id, customerId)
+    const promiseBitrix = this.bitrixService.writeInGroup(group.id, group.name + ' с расписанием: ' + group.timetableStr, group.b_date)
+
+    await Promise.all([promiseAlfa, promiseBitrix])
     // TODO check
   }
 
-  async deleteFromGroup(group) { //customerId
+  async deleteFromGroup(groupId) { //customerId
     console.log("Controller, deleteFromGroup")
     const customerId = this.bitrixService.customerId
 
-    const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(this.ALFA_TOKEN, group.id)
+    const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(groupId)
     const customersInGroup = customersInGroupResponse.data.items
     const customerRec = customersInGroup.find(customerRec => customerRec.customer_id === customerId)
 
-    const res = await this.alfaService.deleteCustomerFromGroup(this.ALFA_TOKEN, customerRec.id, group.id)
-    const res2 = await this.bitrixService.writeInGroup('', '', '')
+    const promiseAlfa = this.alfaService.deleteCustomerFromGroup(customerRec.id, groupId)
+    const promiseBitrix = this.bitrixService.writeInGroup('', '', '')
+
+    const [res, res2] = await Promise.all([promiseAlfa, promiseBitrix])
     console.log(res, res2)
   }
 
   async getLongTermGroups(dealType, format, level) {
     const note = `${format || ""} ${dealType || ""}`
-    const result = await this.alfaService.getGroups(this.ALFA_TOKEN, {
+    const result = await this.alfaService.getGroups({
       "status_id": 1,   // идет набор
       // "note": note,  // вид сделки и формат занятий
       ...(level) && { "name": level }
     })
   }
 
-  static _getWeekDay(day) {
-    let days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
-
-    return days[day - 1];
-  }
 
 }
 
@@ -119,7 +139,6 @@ export default Controller.build();
 function delay(delayInms) {
   return new Promise(resolve => {
     setTimeout(() => {
-      console.log("done")
       resolve(2);
     }, delayInms);
   });

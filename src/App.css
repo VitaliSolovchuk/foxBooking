@@ -14,8 +14,11 @@
     align-items: center;
     justify-content: flex-start;
     font-size: calc(10px + 2vmin);
+    background-color: rgba(238, 242, 244, 0.35);
 }
 
 .App-body {
+    background-color: #eef2f4;
+    min-height: 68vh;
 }
 

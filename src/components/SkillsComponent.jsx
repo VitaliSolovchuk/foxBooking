@@ -11,12 +11,13 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
     setIsLoad(true);
     if (recordSkills) {
       // TODO push data=
-      await controller.saveToGroup(groups.find(group => group.id === recordSkills))
-      setRecords({ ...records, [lessonType]: recordSkills })
+      const group = groups.find(group => group.id === recordSkills)
+      await controller.saveToGroup(group)
+      setRecords({ ...records, [lessonType]: {id: recordSkills, label: group.labelStr} })
     } else {
-      // TODO push data
-      await controller.deleteFromGroup(groups.find(group => group.id === records[lessonType]))
-      setRecords({ ...records, [lessonType]: null })
+      // TODO find group ID
+      await controller.deleteFromGroup(records[lessonType].id)
+      setRecords({ ...records, [lessonType]: {} })
     }
     setIsLoad(false)
 
@@ -28,19 +29,21 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
 
     const groups = await controller.getSkillGroups()
     setGroups(groups);
+    controller.setListCustomersInGroups(groups)
+      .then(newGroups => setGroups(newGroups))
   })
 
   useEffect(() => {
     fetchGroups()
   }, [])
 
-  // useEffect(() => {
-  //  if(isGroupsLoading){
-  //    setIsLoad(true)
-  //  }else{
-  //    setIsLoad(false)
-  //  }
-  // }, [isGroupsLoading])
+  useEffect(() => {
+   if(isGroupsLoading){
+     setIsLoad(true)
+   }else{
+     setIsLoad(false)
+   }
+  }, [isGroupsLoading])
 
   if(!groups || groups.length === 0){
     return <div></div>
@@ -48,7 +51,7 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
 
   return (<div>
     <EnhancedTable
-      record={records?.[lessonType]}
+      recordObj={records?.[lessonType]}
       setRecord={handleSetRecordSkills}
       columns={groupColumnNames}
       rows={[...groups.filter(item => item?.custom_typeoflessons_ === (lessonFormat === "online" ? "Онлайн" : "Офлайн"))]}

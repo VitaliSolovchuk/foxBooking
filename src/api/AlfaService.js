@@ -26,53 +26,28 @@ export default class AlfaService {
 
     return response.data.token
   }
+  static getGroupLabel(group) {
+    return `${group.name} с расписанием ${group.timetableStr}`
 
-  static async getRooms(token) {
-    return await axios.post(ALFA_DAMAIN + 'room/index', {}, {
-      headers: headers(token),
-    })
   }
+  static getGroupTimetable(timetable) {
+    let timetableStr = ''
+    timetable.forEach(tm => {
+      timetableStr += '(' + _getWeekDay(tm['day']) + ')' + tm['time_from_v'] + '-' + tm['time_to_v'] + ' '
+    })
 
-  static async getGroups(token, data) {
-    return await axios.post(ALFA_DAMAIN + 'group/index', data, {
-      headers: headers(token),
-    })
-  }
-
-  // todo get all cgi https://sirfox.s20.online/v2api/1/cgi/index?group_id=1000
-  static async getListCustomersInGroup (token, groupId) {
-    return await axios.post(ALFA_DAMAIN + 'cgi/index?' + `group_id=${groupId}`, {}, {
-      headers: headers(token),
-    })
-  }
-  static async addCustomerToGroup(token, groupId, customerId) {
-    const data = {
-      customer_id: customerId,
+    if (!timetableStr){
+      timetableStr = "не установлено"
     }
-    return await axios.post(ALFA_DAMAIN + 'cgi/create?' + `group_id=${groupId}`, data, {
-      headers: headers(token),
-    })
-  }
-  static async deleteCustomerFromGroup(token, cgiId, groupId) {
-    const option = {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
+
+    return timetableStr
+    function _getWeekDay(day) {
+      let days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
+
+      return days[day - 1];
     }
-    const data = {
-      "b_date": "",
-      "e_date": new Date().toLocaleString("ru", option) // dd.mm.yyyy
-    }
-    return await axios.post(ALFA_DAMAIN + 'cgi/update?' + `id=${cgiId}&` + `group_id=${groupId}`, data, {
-      headers: headers(token),
-    })
   }
 
-  static async getLessons(token, data) {
-    return await axios.post(ALFA_DAMAIN + 'lesson/index', data, {
-      headers: headers(token),
-    })
-  }
 
 
   async getRooms() {
@@ -88,12 +63,12 @@ export default class AlfaService {
   }
 
   // todo get all cgi https://sirfox.s20.online/v2api/1/cgi/index?group_id=1000
-  async getListCustomersInGroup (token, groupId) {
+  async getListCustomersInGroup (groupId) {
     return await axios.post(ALFA_DAMAIN + 'cgi/index?' + `group_id=${groupId}`, {}, {
       headers: headers(this.token),
     })
   }
-  async addCustomerToGroup(token, groupId, customerId) {
+  async addCustomerToGroup(groupId, customerId) {
     const data = {
       customer_id: customerId,
     }
@@ -101,7 +76,7 @@ export default class AlfaService {
       headers: headers(this.token),
     })
   }
-  async deleteCustomerFromGroup(token, cgiId, groupId) {
+  async deleteCustomerFromGroup(cgiId, groupId) {
     const option = {
       year: 'numeric',
       month: 'numeric',
@@ -116,7 +91,7 @@ export default class AlfaService {
     })
   }
 
-  async getLessons(token, data) {
+  async getLessons(data) {
     return await axios.post(ALFA_DAMAIN + 'lesson/index', data, {
       headers: headers(this.token),
     })

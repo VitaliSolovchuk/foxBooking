@@ -4359,14 +4359,55 @@ export const trialColumnNames = [
   }, { name: "vacancies", value: "FreeSeatsInLesson" }, { name: "location", value: "roomStr" },]
 // TODO delete id: "ageRange"
 export const groupColumnNames = [
-  { name: "name", label: "Имя", value: "name", id: "name" }, {
-    name: "timetable", label: "Дата старта", value: "startDateStr", id: "startDateStr"
-  }, { name: "Возрастная группа", label: "Возрастная группа", value: "custom_groupage_", id: "custom_groupage_" }, {
-    name: "note", label: "Описание", value: "custom_comment_", id: "custom_comment_"
-  }, { name: "Расписание", label: "Расписание", value: "timetableStr", id: "timetableStr" }, {
-    name: "Места", label: "Места", value: "freeSeats", id: "freeSeats"
-  }, { name: "Учителя", label: "Учителя", value: "teacher_ids", id: "teacher_ids" }, {
-    name: "Локация", label: "Локация", value: "roomStr", id: "roomStr"
+  {
+    label: "Имя",
+    id: "name",
+    value: "name",
+    numeric: false,
+    disablePadding: false,
+  }, {
+    label: "Дата старта",
+    value: "startDateStr",
+    id: "startDateStr",
+    numeric: false,
+    disablePadding: false,
+  }, {
+    label: "Возрастная группа",
+    value: "custom_groupage_",
+    id: "custom_groupage_",
+    numeric: true,
+    disablePadding: true,
+  }, {
+    label: "Описание",
+    value: "custom_comment_",
+    id: "custom_comment_",
+    numeric: false,
+    disablePadding: false,
+  }, {
+    label: "Расписание",
+    value: "timetableStr",
+    id: "timetableStr",
+    numeric: true,
+    disablePadding: true,
+  }, {
+    label: "Места",
+    value: "freeSeats",
+    id: "freeSeats",
+    numeric: true,
+    disablePadding: false,
+  }, {
+    label: "Учителя",
+    value: "teacher_ids",
+    id: "teacher_ids",
+    numeric: false,
+    disablePadding: true,
+  }, {
+    name: "Локация",
+    label: "Локация",
+    value: "roomStr",
+    id: "roomStr",
+    numeric: false,
+    disablePadding: false,
   }, // { name: "", value: "" },
 ]
 

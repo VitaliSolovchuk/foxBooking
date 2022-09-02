@@ -7,7 +7,8 @@ const ModuleWithInstance = ({controller, setIsLoad}) => {
 
   const [lessonConfig, setLessonConfig] = useState({ lessonFormat: "", lessonType: "" });
 
-  const [records, setRecords] = useState({ skills: '' });
+  const records2 = controller.getRecords()
+  const [records, setRecords] = useState(records2); //{ skills: {id: "", name: ""} }
 
   return (<div className="App">
     <HeaderComponent
@@ -15,17 +16,18 @@ const ModuleWithInstance = ({controller, setIsLoad}) => {
       setLessonConfig={setLessonConfig}
     />
 
-    <div style={{ padding: '1%' }}>
-      {lessonConfig.lessonType === 'skills' && lessonConfig.lessonFormat && <SkillsComponent
-        lessonType={lessonConfig.lessonType}
-        lessonFormat={lessonConfig.lessonFormat}
-        records={records}
-        setRecords={setRecords}
-        controller={controller}
-        setIsLoad={setIsLoad}
-      />}
+    <div className="App-body">
+      <div style={{ padding: '2%' }}>
+        {lessonConfig.lessonType === 'skills' && lessonConfig.lessonFormat && <SkillsComponent
+          lessonType={lessonConfig.lessonType}
+          lessonFormat={lessonConfig.lessonFormat}
+          records={records}
+          setRecords={setRecords}
+          controller={controller}
+          setIsLoad={setIsLoad}
+        />}
 
-      {/*        {lessonConfig.lessonType === 'group' &&
+        {/*        {lessonConfig.lessonType === 'group' &&
           <TableComponent clumns={groupColumnNames} values={groups}></TableComponent>
         }
 
@@ -33,7 +35,9 @@ const ModuleWithInstance = ({controller, setIsLoad}) => {
           <TableComponent clumns={trialColumnNames} values={lessons}></TableComponent>
         }*/}
 
+      </div>
     </div>
+
   </div>)
 };
 

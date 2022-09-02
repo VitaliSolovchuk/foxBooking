@@ -79,7 +79,7 @@ function EnhancedTableHead(props) {
         {headCells.map((headCell, index) => (
           <TableCell
             key={index + 1}
-            align={headCell?.numeric ? 'right' : 'left'}
+            align= {headCell?.numeric ? 'center' : 'left'} //{headCell?.numeric ? 'right' : 'left'}
             padding={headCell?.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -112,13 +112,13 @@ EnhancedTableHead.propTypes = {
 };
 
 const EnhancedTableToolbar = (props) => {
-  const { record, setRecord, selected, setSelected, tableLabel } = props;
+  const { record, recordLabel, setRecord, selected, setSelected, tableLabel } = props;
   const isSetRecord = (!!selected || !!record)
 
   const handleSave = () => {
     // TODO delete console.log("event handleSave");
-    setSelected([])
-    setRecord(selected)
+    setRecord(selected).then(() => setSelected([]))
+
   };
 
   const handleDelete = () => {
@@ -143,7 +143,7 @@ const EnhancedTableToolbar = (props) => {
           variant="subtitle1"
           component="div"
         >
-          1 selected
+          {recordLabel || '1 selected'}
         </Typography>
       ) : (
         <Typography
@@ -188,7 +188,10 @@ EnhancedTableToolbar.propTypes = {
   // selected: PropTypes.number.isRequired,
 };
 
-export default function EnhancedTable({ record, setRecord, tableLabel, columns, rows }) {
+export default function EnhancedTable({ recordObj, setRecord, tableLabel, columns, rows }) {
+  const record = recordObj?.id
+  const recordLabel = recordObj?.label
+
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('name');
   const [selected, setSelected] = React.useState([]);
@@ -197,7 +200,7 @@ export default function EnhancedTable({ record, setRecord, tableLabel, columns, 
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
   const handleRequestSort = (event, property) => {
-    console.log(event, property)
+    // console.log(event, property)
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
@@ -246,6 +249,7 @@ export default function EnhancedTable({ record, setRecord, tableLabel, columns, 
       <Paper sx={{ width: '100%', mb: 2 }}>
         <EnhancedTableToolbar
           record={record}
+          recordLabel={recordLabel}
           setRecord={setRecord}
           setSelected={setSelected}
           selected={selected?.[0]}
@@ -292,7 +296,7 @@ export default function EnhancedTable({ record, setRecord, tableLabel, columns, 
                       {columns.map((column, columnIndex) =>
                         columnIndex === 0
                           ? <TableCell key={columnIndex} component="th" id={labelId} scope="row" padding="none">{row?.[column?.value]}</TableCell>
-                          : <TableCell key={columnIndex} align="right">{row?.[column?.value]}</TableCell>
+                          : <TableCell key={columnIndex} align={column?.numeric ? 'center' : 'left'}>{row?.[column?.value]}</TableCell>
                       )}
 
                     </TableRow>

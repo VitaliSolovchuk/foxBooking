@@ -7,11 +7,12 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
+  backgroundColor: 'rgba(0, 0, 0, 0.0)'
 };
 
 const ModalWithLoader = ({isView}) => {
   return (
-    <Modal open={isView} >
+    <Modal open={isView} BackdropProps={{sx:{backgroundColor: 'rgba(0, 0, 0, 0.18)'}}}>
       <div>
         <CircularIndeterminate sx={style}></CircularIndeterminate>
       </div>
