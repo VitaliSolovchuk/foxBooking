@@ -57,9 +57,22 @@ export default class AlfaService {
   }
 
   async getGroups(data) {
-    return await axios.post(ALFA_DAMAIN + 'group/index', data, {
-      headers: headers(this.token),
-    })
+    const res = []
+    const params = {page: 1}
+
+    let total, count, page;
+    do {
+      const response = await axios.post(ALFA_DAMAIN + 'group/index', data, {
+        headers: headers(this.token),
+        params
+      })
+      res.push(...response.data.items)
+      total = response.data.total
+      count = response.data.count
+      page = response.data.page
+      ++params.page
+    } while (total > (page + 1) * (data?.pageSize || params?.pageSize || 20) );
+    return res
   }
 
   // todo get all cgi https://sirfox.s20.online/v2api/1/cgi/index?group_id=1000
@@ -83,8 +96,15 @@ export default class AlfaService {
       day: 'numeric',
     }
     const data = {
-      "b_date": "",
       "e_date": new Date().toLocaleString("ru", option) // dd.mm.yyyy
+    }
+    return await axios.post(ALFA_DAMAIN + 'cgi/update?' + `id=${cgiId}&` + `group_id=${groupId}`, data, {
+      headers: headers(this.token),
+    })
+  }
+  async updateCustomerFromGroup(cgiId, groupId) {
+    const data = {
+      "e_date": null
     }
     return await axios.post(ALFA_DAMAIN + 'cgi/update?' + `id=${cgiId}&` + `group_id=${groupId}`, data, {
       headers: headers(this.token),
@@ -97,4 +117,12 @@ export default class AlfaService {
     })
   }
 
+}
+
+function delay(delayInms) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(2);
+    }, delayInms);
+  });
 }

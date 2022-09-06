@@ -25,13 +25,13 @@ export default class BitrixService {
     return {
       skills: {
         id: +this.DEAL[_groupSkillId] || null ,
-        label: this.DEAL[_groupSkillName] + ' с расписанием '+ this.DEAL[_groupSkillTime],
+        label: this.DEAL[_groupSkillName] ? this.DEAL[_groupSkillName] + ' с расписанием '+ this.DEAL[_groupSkillTime] : null,
         isOld: false
       },
       group: {
         id: +this.DEAL[_groupId] || this.DEAL[_groupName],
         name: this.DEAL[_groupName],
-        label: this.DEAL[_groupName] + ' с расписанием '+ this.DEAL[_groupTime],
+        label: this.DEAL[_groupName] ? this.DEAL[_groupName] + ' с расписанием '+ this.DEAL[_groupTime] : null,
         isOld: !+this.DEAL[_groupName]
       }
     }
@@ -43,10 +43,14 @@ export default class BitrixService {
     const levelId = this.DEAL['UF_CRM_1593865305969']
     const level = (bitrix_levels.find(lv => lv.value === levelId)).label
     const age = getAgeFromBirthday(this.DEAL['UF_CRM_1595188876144'])
-
+    const customerId = this.customerId
+    if (!this.customerId){
+      alert('не указан id лида из альфы, модуль не будет сохранять запись')
+    }
     // console.log('getDealConfig', this.DEAL, levelId, this.DEAL['UF_CRM_1595188876144'])
 
     const type = categiry === '7' ? 'skills' : "trial"
+    // const type = "trial"
     const format = type === 'skills' ? 'offline' : 'online'
     return {
       lessonType: type,
@@ -54,6 +58,7 @@ export default class BitrixService {
       levelId,
       level,
       age,
+      customerId
     }
   }
 
@@ -77,10 +82,14 @@ export default class BitrixService {
     const _groupName = 'UF_CRM_1612747156'
     const _groupTime = 'UF_CRM_1595213756897'
     const _groupData = 'UF_CRM_1624022986'
+    const _groupLink = 'UF_CRM_1662502554427'
+    const groupLink = groupId ? createGroupLink(groupId) : null
+
 
     const data = {
       id: this.DEAL.ID, fields: {
         [_groupId]: groupId, [_groupName]: groupName, [_groupTime]: groupTime, [_groupData]: groupData,
+        [_groupLink]: groupLink,
       }, params: {
         "REGISTER_SONET_EVENT": "Y"
       }
@@ -97,11 +106,14 @@ export default class BitrixService {
     const _groupSkillName = 'UF_CRM_1662131583057'
     const _groupSkillTime = 'UF_CRM_1662131620612'
     const _groupSkillDate = 'UF_CRM_1662131715079'
+    const _groupLink = 'UF_CRM_1662502373339'
+    const groupLink = groupId ? createGroupLink(groupId) : null
 
 
     const data = {
       id: this.DEAL.ID, fields: {
         [_groupSkillId]: groupId, [_groupSkillName]: groupName, [_groupSkillTime]: groupTime, [_groupSkillDate]: groupData,
+        [_groupLink]: groupLink,
       }, params: {
         "REGISTER_SONET_EVENT": "Y"
       }
@@ -122,4 +134,10 @@ const getAgeFromBirthday = (dateBirthday) => {
   let now = new Date(),
     age = now.getFullYear() - birthDate.getFullYear();
   return now.setFullYear(1972) < birthDate.setFullYear(1972) ? age - 1 : age;
+}
+const createGroupLink = (groupId) => {
+  return `https://sirfox.s20.online/company/1/group/view?id=${groupId}`
+}
+const createUserLink = (userId) => {
+  return `https://sirfox.s20.online/company/1/group/view?id=${userId}`
 }

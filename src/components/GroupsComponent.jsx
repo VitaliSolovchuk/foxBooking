@@ -9,21 +9,23 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
   const tableLabel = lessonConfig.lessonType;
   const handleSetRecordSkills = async (recordSkills) => {
     setIsLoad(true);
+    if (recordSkills) {
+      const group = groups.find(group => group.id === recordSkills)
+      await controller.saveToGroup(group, lessonConfig.lessonType)
+      setRecords({ ...records, [lessonConfig.lessonType]: {id: recordSkills, label: group.labelStr} })
+    } else {
+      if(records[lessonConfig.lessonType].isOld){
+        await controller.deleteFromGroupWithoutGroupId(records[lessonConfig.lessonType].name, lessonConfig.lessonType, groups)
+        setRecords({ ...records, [lessonConfig.lessonType]: {} })
+      }else{
+        await controller.deleteFromGroup(records[lessonConfig.lessonType].id, lessonConfig.lessonType)
+        setRecords({ ...records, [lessonConfig.lessonType]: {} })
+      }
+
+    }
+
     // if (recordSkills) {
-    //   // TODO push data=
-    //   const group = groups.find(group => group.id === recordSkills)
-    //   await controller.saveToGroup(group)
-    //   setRecords({ ...records, [lessonConfig.lessonType]: {id: recordSkills, label: group.labelStr} })
-    // } else {
-    //   // TODO find group ID
-    //   if(records[lessonConfig.lessonType].isOld){
-    //     // TODO find by name
-    //     alert('ещё не прикрутили')
-    //   }else{
-    //     await controller.deleteFromGroup(records[lessonConfig.lessonType].id)
-    //     setRecords({ ...records, [lessonConfig.lessonType]: {} })
-    //   }
-    //
+    //   console.log(await controller.getAllGroupsTest())
     // }
     setIsLoad(false)
 
@@ -34,6 +36,15 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
   const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async (level) => {
 
     const groups = await controller.getGroups(level)
+
+    if(records[lessonConfig.lessonType].isOld){
+      const groupCustomer = groups
+        .filter( gr => gr.name === records[lessonConfig.lessonType].name)
+      if(groupCustomer.length === 1){
+        setRecords({ ...records, [lessonConfig.lessonType]: {...records[lessonConfig.lessonType], id: groupCustomer[0].id} })
+      }
+    }
+
     setGroups(groups);
     controller.setListCustomersInGroups(groups)
       .then(newGroups => setGroups(newGroups))
@@ -41,6 +52,7 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
 
   useEffect(() => {
     fetchGroups(lessonConfig.level)
+
   }, [lessonConfig.level])
 
   useEffect(() => {

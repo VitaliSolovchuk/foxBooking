@@ -12,19 +12,13 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
     if (recordSkills) {
       // TODO push data=
       const group = groups.find(group => group.id === recordSkills)
-      await controller.saveToGroup(group)
+      await controller.saveToGroup(group, lessonType)
       setRecords({ ...records, [lessonType]: {id: recordSkills, label: group.labelStr} })
     } else {
-      // TODO find group ID
-      if(records[lessonType].isOld){
-        // TODO find by name
-        alert('ещё не прикрутили')
-      }else{
-        await controller.deleteFromGroup(records[lessonType].id)
+        await controller.deleteFromGroup(records[lessonType].id, lessonType)
         setRecords({ ...records, [lessonType]: {} })
       }
 
-    }
     setIsLoad(false)
 
   }

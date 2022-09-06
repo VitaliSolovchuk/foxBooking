@@ -48,9 +48,7 @@ class Controller {
       "note": note,     // вид сделки и формат занятий
       "pageSize": 50
     }
-    const result = await this.alfaService.getGroups(filter)
-
-    const allGroups = result.data.items
+    const allGroups = await this.alfaService.getGroups(filter)
     allGroups.forEach(group => {
       // injection timetable from alfa_regulars
       // TODO get regulars
@@ -86,10 +84,7 @@ class Controller {
       "status_id": 1,   // идет набор
       "pageSize": 50
     }
-    console.log(filter)
-    const result = await this.alfaService.getGroups(filter)
-
-    const allGroups = result.data.items
+    const allGroups = await this.alfaService.getGroups(filter)
     allGroups.forEach(group => {
       // injection timetable from alfa_regulars
       // TODO get regulars
@@ -128,26 +123,40 @@ class Controller {
         await delay(200)
       }
 
-    const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(group.id)
-    const customersInGroup = customersInGroupResponse.data.items
+      const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(group.id)
+      const customersInGroup = customersInGroupResponse.data.items
       group.participants = customersInGroup
-      group.freeSeats = `${customersInGroup.length}/${group.limit}`
+      const actualCustomers = customersInGroup.filter(el => new Date(el.e_date |  Date) < new Date()).length
+      group.freeSeats = `${group.limit - actualCustomers}/${group.limit}`
       newGroups.push(group)
     }
     return newGroups
   }
-  async saveToGroup(group) { //customerId
+  async saveToGroup(group, groupType) { //customerId
     console.log("Controller, saveToGroup")
     const customerId = this.bitrixService.customerId
+    const userParticipant = group.participants.find(user => user.customer_id === customerId)
 
-    const promiseAlfa = this.alfaService.addCustomerToGroup(group.id, customerId)
-    const promiseBitrix = this.bitrixService.writeInGroupSkills(group.id, group.name, group.timetableStr, group.b_date)
+    let promiseAlfa;
+    if(userParticipant){
+      promiseAlfa = this.alfaService.updateCustomerFromGroup(userParticipant.id, group.id)
+    }else{
+      promiseAlfa = this.alfaService.addCustomerToGroup(group.id, customerId)
+    }
 
-    await Promise.all([promiseAlfa, promiseBitrix])
-    // TODO check
+    let promiseBitrix;
+    if(groupType === "skills") {
+      promiseBitrix = this.bitrixService.writeInGroupSkills(group.id, group.name, group.timetableStr, group.b_date)
+    }
+    if(groupType === "group") {
+      promiseBitrix = this.bitrixService.writeInGroup(group.id, group.name, group.timetableStr, group.b_date)
+    }
+
+    const [resAlfa, resBitrix] = await Promise.all([promiseAlfa, promiseBitrix])
+
   }
 
-  async deleteFromGroup(groupId) { //customerId
+  async deleteFromGroup(groupId, groupType) { //customerId
     console.log("Controller, deleteFromGroup")
     const customerId = this.bitrixService.customerId
 
@@ -156,15 +165,72 @@ class Controller {
     const customerRec = customersInGroup.find(customerRec => customerRec.customer_id === customerId)
 
     const promiseAlfa = this.alfaService.deleteCustomerFromGroup(customerRec.id, groupId)
-    const promiseBitrix = this.bitrixService.writeInGroupSkills('', '','', '')
+    let promiseBitrix;
+    if(groupType === "skills") {
+      promiseBitrix = this.bitrixService.writeInGroupSkills('', '', '', '')
+    }
+    if(groupType === "group") {
+      promiseBitrix = this.bitrixService.writeInGroup('', '', '', '')
+    }
 
     const [res, res2] = await Promise.all([promiseAlfa, promiseBitrix])
     console.log(res, res2)
   }
+  async deleteFromGroupWithoutGroupId(groupName, groupType, groups) { //customerId
+    console.log("Controller, deleteFromGroupWithoutGroupId")
+    const customerId = this.bitrixService.customerId
+
+    // 1 search group
+    // 1.1 search
+    const groupCustomerRecs = groups
+      .filter( gr => gr.name === groupName)
+      .filter( gr => gr.participants.find(user => user.customer_id === customerId))
+    console.log('groupCustomerRecs', groupCustomerRecs)
+    // 1.2 get from alfa
+    if(groupCustomerRecs.length === 0){
+      // достать группы в интернете
+      const allGroups = await this.alfaService.getGroups({ pageSize: 50, name: groupName})
+      const groups = [...allGroups]
+      // подключить к группам расписание
+      const groupsWithParticipants = await this.setListCustomersInGroups(groups)
+      // найти в расписании пользователя
+      const userGroups = groupsWithParticipants
+        .filter( gr => gr.name === groupName)
+        .filter( gr => gr.participants.find(user => user.customer_id === customerId))
+
+      //положить в общий список
+      groupCustomerRecs.push(...userGroups)
+      console.log('groupCustomerRecs2', groupCustomerRecs)
+    }
+
+    // 2.1 если группа нашлась одна
+    if(groupCustomerRecs.length === 1){
+      const group = groupCustomerRecs[0]
+      const customerRec = group.participants.find(customerRec => customerRec.customer_id === customerId)
+
+      const promiseAlfa = this.alfaService.deleteCustomerFromGroup(customerRec.id, group.id)
+      let promiseBitrix;
+      if(groupType === "skills") {
+        promiseBitrix = this.bitrixService.writeInGroupSkills('', '', '', '')
+      }
+      if(groupType === "group") {
+        promiseBitrix = this.bitrixService.writeInGroup('', '', '', '')
+      }
+
+      await Promise.all([promiseAlfa, promiseBitrix])
+    }else {
+      alert ('больше одной группы нашло - удалите вручную')
+    }
+
+  }
+  async getAllGroupsTest(){
+    const allGroups = await this.alfaService.getGroups({ pageSize: 50 })
+    return allGroups
+  }
 
   async getLongTermGroups(dealType, format, level) {
     const note = `${format || ""} ${dealType || ""}`
-    const result = await this.alfaService.getGroups({
+    const allGroups = await this.alfaService.getGroups({
       "status_id": 1,   // идет набор
       // "note": note,  // вид сделки и формат занятий
       ...(level) && { "name": level }
