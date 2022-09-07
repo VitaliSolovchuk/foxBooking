@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import SkillsComponent from "./SkillsComponent";
 import HeaderComponent from "./HeaderComponent";
 import GroupsComponent from "./GroupsComponent";
+import TrialLessensComponent from "./TrialLessensComponent";
 
 const ModuleWithInstance = ({controller, isLoad, setIsLoad}) => {
 
@@ -36,9 +37,16 @@ const ModuleWithInstance = ({controller, isLoad, setIsLoad}) => {
           setIsLoad={setIsLoad}
         />}
 
-        {/*{lessonConfig.lessonType === 'trial' &&*/}
-        {/*  <TableComponent clumns={trialColumnNames} values={lessons}></TableComponent>*/}
-        {/*}*/}
+
+        {lessonConfig.lessonType === 'trial' && <TrialLessensComponent
+          lessonType={lessonConfig.lessonType}
+          lessonFormat={lessonConfig.lessonFormat}
+          lessonAge={lessonConfig.age}
+          records={records}
+          setRecords={setRecords}
+          controller={controller}
+          setIsLoad={setIsLoad}
+        />}
 
       </div>
     </div>

@@ -23,27 +23,16 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
       }
 
     }
-
-    // if (recordSkills) {
-    //   console.log(await controller.getAllGroupsTest())
-    // }
     setIsLoad(false)
 
   }
 
 
   const [groups, setGroups] = useState([]); //groupLessons
-  const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async (level) => {
+  const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async () => {
 
-    const groups = await controller.getGroups(level)
-
-    if(records[lessonConfig.lessonType].isOld){
-      const groupCustomer = groups
-        .filter( gr => gr.name === records[lessonConfig.lessonType].name)
-      if(groupCustomer.length === 1){
-        setRecords({ ...records, [lessonConfig.lessonType]: {...records[lessonConfig.lessonType], id: groupCustomer[0].id} })
-      }
-    }
+    // TODO trial lessens
+    const groups = await controller.getGroups()
 
     setGroups(groups);
     controller.setListCustomersInGroups(groups)
@@ -51,9 +40,9 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
   })
 
   useEffect(() => {
-    fetchGroups(lessonConfig.level)
+    fetchGroups()
 
-  }, [lessonConfig.level])
+  }, [])
 
   useEffect(() => {
    if(isGroupsLoading){

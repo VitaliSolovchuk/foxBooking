@@ -14,8 +14,8 @@ const HeaderComponent = ({lessonConfig, setLessonConfig}) => {
     setLessonConfig({ ...lessonConfig, lessonType: value });
   };
 
-  const handleLessonAge = (value) => {
-    setLessonConfig({ ...lessonConfig, age: value });
+  const handleLessonAge = (event) => {
+    setLessonConfig({ ...lessonConfig, age: +event.target.value });
   };
 
   const handleLessonLevel = (value) => {
@@ -53,8 +53,9 @@ const HeaderComponent = ({lessonConfig, setLessonConfig}) => {
           disabled={!isCustomize}
           id="standard-disabled"
           label="Age"
-          defaultValue={lessonConfig.age || "Возраст"}
+          defaultValue={lessonConfig.age || 0}
           variant="standard"
+          type="number"
           onChange={handleLessonAge}
         />
       </div>

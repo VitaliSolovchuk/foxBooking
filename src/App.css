@@ -6,7 +6,7 @@
 
 .App-header {
     padding: 1%;
-    min-height: 8vh;
+    min-height: 7vh;
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
@@ -19,6 +19,6 @@
 
 .App-body {
     background-color: #eef2f4;
-    min-height: 87vh;
+    min-height: 89vh;
 }
 

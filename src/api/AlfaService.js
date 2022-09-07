@@ -112,9 +112,24 @@ export default class AlfaService {
   }
 
   async getLessons(data) {
-    return await axios.post(ALFA_DAMAIN + 'lesson/index', data, {
-      headers: headers(this.token),
-    })
+
+    const res = []
+    const params = {page: 1}
+    data.pageSize = 50;
+
+    let total, count, page;
+    do {
+      const response = await axios.post(ALFA_DAMAIN + 'lesson/index', data, {
+        headers: headers(this.token),
+        params
+      })
+      res.push(...response.data.items)
+      total = response.data.total
+      count = response.data.count
+      page = response.data.page
+      ++params.page
+    } while (total > (page + 1) * (data?.pageSize || params?.pageSize || 20) );
+    return res
   }
 
 }

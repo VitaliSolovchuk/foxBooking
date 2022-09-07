@@ -49,8 +49,8 @@ export default class BitrixService {
     }
     // console.log('getDealConfig', this.DEAL, levelId, this.DEAL['UF_CRM_1595188876144'])
 
-    const type = categiry === '7' ? 'skills' : "trial"
-    // const type = "trial"
+    // const type = categiry === '7' ? 'skills' : "trial"
+    const type = "trial"
     const format = type === 'skills' ? 'offline' : 'online'
     return {
       lessonType: type,

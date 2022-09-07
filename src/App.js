@@ -1,7 +1,7 @@
 import './App.css';
 import Controller from "./controllers/Controller";
 import React, { useEffect, useState } from "react";
-import ModalWithLoader from "./components/ModalWithLoader";
+import ModalWithLoader from "./components/UI/ModalWithLoader";
 import ModuleWithInstance from "./components/ModuleWithInstance";
 import { useFetching } from "./hooks/useFetching";
 

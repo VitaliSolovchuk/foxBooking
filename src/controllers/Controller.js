@@ -39,6 +39,46 @@ class Controller {
     return record
   }
 
+
+  async getLessons() {
+
+    const filter = {
+      "lesson_type_id": 3, // пз
+      "status": 1,   // идет набор
+    }
+    const allLessons = await this.alfaService.getLessons(filter)
+    allLessons.forEach(lesson => {
+      // injection timetable from alfa_regulars
+      lesson.labelStr = "Пробное занятие"
+      let options = {
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      }
+      lesson.timeFromStr = new Date(lesson?.time_from).toLocaleString("ru", options)
+
+      // injection roomStr
+      const roomId = lesson?.['room_id']
+      if (roomId) {
+        const room = alfa_rooms.find(el => el.id === roomId)
+        lesson.roomStr = room?.note
+        lesson.formatStr = room?.location_id === 3 ? "online" : "offline"
+      }else {
+        lesson.formatStr = "online"
+      }
+
+
+      // TODO freeSeats
+      const places = {
+          online: 6,
+          offline: 15,
+      }
+      lesson.freeSeats = `${places[lesson.formatStr] - lesson.customer_ids.length }/${places[lesson.formatStr]}`
+    })
+
+    return allLessons;
+  }
   async getSkillGroups(dealType = 'skills', format) {
     // console.log("Controller, getSkillGroups")
     const note = `${format || ""}-${dealType || ""}`
@@ -153,6 +193,21 @@ class Controller {
     }
 
     const [resAlfa, resBitrix] = await Promise.all([promiseAlfa, promiseBitrix])
+
+  }
+  async saveToLessen(lessenId) { //customerId
+    console.log("Controller, saveToLessen")
+    const customerId = this.bitrixService.customerId
+    // get lesson
+    const lesson = {}
+    // updateCustomer
+    //'is_study' => 0, 'lead_status_id' => 2, 'e_date' => '2030-10-10'
+
+    // updateLesson
+
+    // const promiseAlfa = this.alfaService.updateCustomerFromGroup(userParticipant.id, group.id)
+    // const promiseBitrix = this.bitrixService.writeInGroupSkills(group.id, group.name, group.timetableStr, group.b_date)
+    // const [resAlfa, resBitrix] = await Promise.all([promiseAlfa, promiseBitrix])
 
   }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import CircularIndeterminate from "./UI/Loader";
+import CircularIndeterminate from "./Loader";
 import { Modal } from "@mui/material";
 
 const style = {
