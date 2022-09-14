@@ -29,10 +29,10 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
 
 
   const [groups, setGroups] = useState([]); //groupLessons
-  const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async () => {
+  const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async (level='') => {
 
     // TODO trial lessens
-    const groups = await controller.getGroups()
+    const groups = await controller.getGroups(level)
 
     setGroups(groups);
     controller.setListCustomersInGroups(groups)
@@ -40,9 +40,9 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
   })
 
   useEffect(() => {
-    fetchGroups()
+    fetchGroups(lessonConfig.level)
 
-  }, [])
+  }, [lessonConfig.level])
 
   useEffect(() => {
    if(isGroupsLoading){

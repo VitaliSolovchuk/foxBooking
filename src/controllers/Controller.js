@@ -48,33 +48,7 @@ class Controller {
     }
     const allLessons = await this.alfaService.getLessons(filter)
     allLessons.forEach(lesson => {
-      // injection timetable from alfa_regulars
-      lesson.labelStr = "Пробное занятие"
-      let options = {
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      }
-      lesson.timeFromStr = new Date(lesson?.time_from).toLocaleString("ru", options)
-
-      // injection roomStr
-      const roomId = lesson?.['room_id']
-      if (roomId) {
-        const room = alfa_rooms.find(el => el.id === roomId)
-        lesson.roomStr = room?.note
-        lesson.formatStr = room?.location_id === 3 ? "online" : "offline"
-      }else {
-        lesson.formatStr = "online"
-      }
-
-
-      // TODO freeSeats
-      const places = {
-          online: 6,
-          offline: 15,
-      }
-      lesson.freeSeats = `${places[lesson.formatStr] - lesson.customer_ids.length }/${places[lesson.formatStr]}`
+      AlfaService.injectionRoomToLesson(lesson)
     })
 
     return allLessons;
@@ -198,16 +172,25 @@ class Controller {
   async saveToLessen(lessenId) { //customerId
     console.log("Controller, saveToLessen")
     const customerId = this.bitrixService.customerId
+
     // get lesson
-    const lesson = {}
+    const filter = {id: lessenId, lesson_type_id: 3, status: 1 }
+    const lesson = (await this.alfaService.getLessons(filter))[0]
+    AlfaService.injectionRoomToLesson(lesson)
+
+    if(lesson.status !== 1) { // searching
+      //TODO thow error
+    }
+
     // updateCustomer
-    //'is_study' => 0, 'lead_status_id' => 2, 'e_date' => '2030-10-10'
+    const customerData = {id: customerId, is_study: 0, lead_status_id: 2, e_date: '2030-10-10'}
+    const customer = await this.alfaService.updateCustomer(customerData)
 
     // updateLesson
-
-    // const promiseAlfa = this.alfaService.updateCustomerFromGroup(userParticipant.id, group.id)
-    // const promiseBitrix = this.bitrixService.writeInGroupSkills(group.id, group.name, group.timetableStr, group.b_date)
-    // const [resAlfa, resBitrix] = await Promise.all([promiseAlfa, promiseBitrix])
+    filter.customer_ids = lesson.customer_ids.concat(customerId)
+    const promiseAlfa = this.alfaService.updateLessons(filter)
+    const promiseBitrix = this.bitrixService.writeInLesson(lesson.id, lesson.time_from, lesson.formatStr)
+    const [resAlfa, resBitrix] = await Promise.all([promiseAlfa, promiseBitrix])
 
   }
 
@@ -278,10 +261,35 @@ class Controller {
     }
 
   }
-  async getAllGroupsTest(){
-    const allGroups = await this.alfaService.getGroups({ pageSize: 50 })
-    return allGroups
+
+  async deleteFromLessen(lessenId) {
+    console.log("Controller, deleteFromLessen")
+    const customerId = this.bitrixService.customerId
+
+    // get lesson
+    const filter = {id: lessenId, lesson_type_id: 3, status: 1}
+    const promiseAlfa = this.alfaService.getLessons(filter)
+    const promiseBitrix = this.bitrixService.writeInLesson('', '', '')
+    const [resAlfa, resBitrix] = await Promise.all([promiseAlfa, promiseBitrix])
+    const lesson = resAlfa[0]
+
+    if(lesson.status !== 1) { // searching
+      alert('занятие не запланировано')
+      return
+      //TODO thow error
+    }
+
+    // updateLesson
+    AlfaService.injectionRoomToLesson(lesson)
+    lesson.customer_ids.pop(customerId)
+    filter.customer_ids = lesson.customer_ids
+    await this.alfaService.updateLessons(filter)
+
   }
+  // async getAllGroupsTest(){
+  //   const allGroups = await this.alfaService.getGroups({ pageSize: 50 })
+  //   return allGroups
+  // }
 
   async getLongTermGroups(dealType, format, level) {
     const note = `${format || ""} ${dealType || ""}`

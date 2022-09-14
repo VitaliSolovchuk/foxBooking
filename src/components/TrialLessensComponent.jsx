@@ -11,12 +11,12 @@ const TrialLessensComponent = ({ lessonType, lessonFormat, lessonAge, records, s
   const handleSetRecordSkills = async (recordSkills) => {
     setIsLoad(true);
     if (recordSkills) {
-      // const group = groups.find(group => group.id === recordSkills)
-      // await controller.saveToGroup(group, lessonType)
-      // setRecords({ ...records, [lessonType]: {id: recordSkills, label: group.labelStr} })
+      const group = groups.find(group => group.id === recordSkills)
+      await controller.saveToLessen(recordSkills)
+      setRecords({ ...records, [lessonType]: {id: recordSkills, label: group.label} })
     } else {
-        // await controller.deleteFromGroup(records[lessonType].id, lessonType)
-        // setRecords({ ...records, [lessonType]: {} })
+        await controller.deleteFromLessen(records[lessonType].id)
+        setRecords({ ...records, [lessonType]: {} })
       }
 
     setIsLoad(false)
@@ -79,7 +79,7 @@ const TrialLessensComponent = ({ lessonType, lessonFormat, lessonAge, records, s
       rows={lessons.filter(ls => new Date(ls.date).toISOString().split('T')[0] === new Date(date).toISOString().split('T')[0])}
       tableLabel={tableLabel}
     />
-    <div style={{'padding-left': "1.4%"}}>
+    <div style={{'paddingLeft': "1.4%"}}>
       <StaticDatePickerDemo lessons={lessons} setDate={setDate}/>
     </div>
     {/*{groupsErr && <div>ОШИБКА</div>}*/}

@@ -64,7 +64,7 @@ function EnhancedTableHead(props) {
 
   return (
     <TableHead>
-      <TableRow>
+      <TableRow key={0}>
         <TableCell key={0} padding="checkbox">
           <Checkbox
             color="primary"

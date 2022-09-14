@@ -1,5 +1,5 @@
 import axios from "axios";
-import { BITRIX_AUTH, bitrix_levels } from "../constants";
+import { BITRIX_AUTH, bitrix_formats, bitrix_levels } from "../constants";
 
 export default class BitrixService {
   // UF_CRM_1593865305969 level
@@ -10,6 +10,14 @@ export default class BitrixService {
   }
 
   getRecords() {
+    let options = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+      hour: 'numeric',
+      minute: 'numeric',
+    }
 
     const _groupSkillId = 'UF_CRM_1662131538432'
     const _groupSkillName = 'UF_CRM_1662131583057'
@@ -22,6 +30,11 @@ export default class BitrixService {
     const _groupTime = 'UF_CRM_1595213756897'
     const _groupData = 'UF_CRM_1624022986'
 
+    const _lessonId = 'UF_CRM_1594848275149'
+    const _lessonData = 'UF_CRM_1594925394614'
+    const _lessonFormat = 'UF_CRM_1601465549030'
+    const lessonFormat = (bitrix_formats.find(level => +level.value === +this.DEAL[_lessonFormat])).label
+    console.log(lessonFormat,'lessonFormat')
     return {
       skills: {
         id: +this.DEAL[_groupSkillId] || null ,
@@ -29,10 +42,17 @@ export default class BitrixService {
         isOld: false
       },
       group: {
-        id: +this.DEAL[_groupId] || this.DEAL[_groupName],
+        id: +this.DEAL[_groupId] || this.DEAL[_groupName] || null ,
         name: this.DEAL[_groupName],
         label: this.DEAL[_groupName] ? this.DEAL[_groupName] + ' с расписанием '+ this.DEAL[_groupTime] : null,
         isOld: !+this.DEAL[_groupName]
+      },
+      trial: {
+        id: +this.DEAL[_lessonId] || null ,
+        label: this.DEAL[_lessonData]
+          ? `Запись на занятие \t${new Date(this.DEAL[_lessonData]).toLocaleString("ru", options)} (${lessonFormat || ""})`
+          : null,
+        format: lessonFormat,
       }
     }
   }
@@ -47,7 +67,6 @@ export default class BitrixService {
     if (!this.customerId){
       alert('не указан id лида из альфы, модуль не будет сохранять запись')
     }
-    // console.log('getDealConfig', this.DEAL, levelId, this.DEAL['UF_CRM_1595188876144'])
 
     // const type = categiry === '7' ? 'skills' : "trial"
     const type = "trial"
@@ -98,7 +117,6 @@ export default class BitrixService {
 
     return await axios.post(`${BITRIX_AUTH}/${method}/`, data)
   }
-
   async writeInGroupSkills(groupId, groupName, groupTime, groupData) {
     const method = 'crm.deal.update'
 
@@ -114,6 +132,24 @@ export default class BitrixService {
       id: this.DEAL.ID, fields: {
         [_groupSkillId]: groupId, [_groupSkillName]: groupName, [_groupSkillTime]: groupTime, [_groupSkillDate]: groupData,
         [_groupLink]: groupLink,
+      }, params: {
+        "REGISTER_SONET_EVENT": "Y"
+      }
+    }
+
+    return await axios.post(`${BITRIX_AUTH}/${method}/`, data)
+  }
+  async writeInLesson(lessonId, lessonData, lessonFormat) {
+    const method = 'crm.deal.update'
+
+    const _lessonId = 'UF_CRM_1594848275149'
+    const _lessonData = 'UF_CRM_1594925394614'
+    const _lessonFormat = 'UF_CRM_1601465549030'
+    const format = (bitrix_formats.find(form => form.label === lessonFormat))?.value || ''
+
+    const data = {
+      id: this.DEAL.ID, fields: {
+        [_lessonId]: lessonId, [_lessonData]: lessonData, [_lessonFormat]: format,
       }, params: {
         "REGISTER_SONET_EVENT": "Y"
       }

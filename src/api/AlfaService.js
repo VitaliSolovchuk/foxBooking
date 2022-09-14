@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ALFA_DAMAIN, ALFA_EMAIL, ALFA_API_KEY } from "../constants";
+import { ALFA_DAMAIN, ALFA_EMAIL, ALFA_API_KEY, alfa_rooms } from "../constants";
 
 
 
@@ -46,6 +46,47 @@ export default class AlfaService {
 
       return days[day - 1];
     }
+  }
+  static injectionRoomToLesson(lesson){
+
+    lesson['labelStr'] = "Пробное занятие"
+
+    // injection timetable from alfa_regulars
+    let options = {
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+    }
+    lesson.timeFromStr = new Date(lesson?.time_from).toLocaleString("ru", options)
+
+    // injection roomStr
+    const roomId = lesson?.['room_id']
+    if (roomId) {
+      const room = alfa_rooms.find(el => el.id === roomId)
+      lesson.roomStr = room?.note
+      lesson.formatStr = room?.location_id === 3 ? "online" : "offline"
+      // TODO get room from id
+    }else {
+      lesson.formatStr = "online"
+    }
+
+    // TODO freeSeats
+    const places = {
+      online: 6,
+      offline: 15,
+    }
+    lesson.freeSeats = `${places[lesson.formatStr] - lesson.customer_ids.length }/${places[lesson.formatStr]}`
+
+    let options2 = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+      hour: 'numeric',
+      minute: 'numeric',
+    }
+    lesson.label = `Запись на занятие \t${new Date(lesson.time_from).toLocaleString("ru", options2)} (${lesson.formatStr || ""})`
   }
 
 
@@ -111,6 +152,7 @@ export default class AlfaService {
     })
   }
 
+  // LESSONS
   async getLessons(data) {
 
     const res = []
@@ -119,7 +161,7 @@ export default class AlfaService {
 
     let total, count, page;
     do {
-      const response = await axios.post(ALFA_DAMAIN + 'lesson/index', data, {
+      const response = await axios.post(ALFA_DAMAIN + 'lesson/index?', data, {
         headers: headers(this.token),
         params
       })
@@ -130,6 +172,28 @@ export default class AlfaService {
       ++params.page
     } while (total > (page + 1) * (data?.pageSize || params?.pageSize || 20) );
     return res
+  }
+  async updateLessons(data) {
+    const params = {id: data.id}
+    const response = await axios.post(ALFA_DAMAIN + 'lesson/update?', data, {
+       headers: headers(this.token),
+      params
+    })
+
+    console.log(response, 'updateLessons')
+    return response.data
+  }
+
+  //CUSTOMER
+  async updateCustomer(data) {
+    const params = {id: data.id}
+    const response = await axios.post(ALFA_DAMAIN + 'customer/update?', data, {
+      headers: headers(this.token),
+      params
+    })
+
+    console.log(response, 'updateCustomer')
+    return response.data
   }
 
 }
