@@ -1,9 +1,10 @@
 import React from 'react';
 import { trialColumnNames } from "../constants";
-import EnhancedTable from "./CustomTableComponent";
+import EnhancedTable from "./UI/CustomTableComponent";
 import { useFetching } from "../hooks/useFetching";
 import { useEffect, useState } from "react";
 import StaticDatePickerDemo from "./UI/StaticDatePickerDemo";
+import { useLessons } from "../hooks/userMemoFiltration";
 
 const TrialLessensComponent = ({ lessonType, lessonFormat, lessonAge, records, setRecords, setIsLoad, controller}) => {
 
@@ -28,64 +29,42 @@ const TrialLessensComponent = ({ lessonType, lessonFormat, lessonAge, records, s
   const [groups, setGroups] = useState([]); //groupLessons
   const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async () => {
 
+    setIsLoad(true)
     const lessons = await controller.getLessons()
     setGroups(lessons);
+    setIsLoad(false)
   })
 
   useEffect(() => {
     fetchGroups()
   }, [])
 
-  useEffect(() => {
-   if(isGroupsLoading){
-     setIsLoad(true)
-   }else{
-     setIsLoad(false)
-   }
-  }, [isGroupsLoading])
 
-  // useEffect(() => {
-  //   if(isGroupsLoading){
-  //     setIsLoad(true)
-  //   }else{
-  //     setIsLoad(false)
-  //   }
-  // }, [lessonAge])
+  const lessons = useLessons(groups, lessonFormat, 'formatStr', lessonAge)
 
-  if(!groups || groups.length === 0){
+  if(!lessons || lessons.length === 0){
     return <div>ПУСТО</div>
   }
 
-  const lessons = [...groups
-    .filter(item => item?.formatStr === lessonFormat)
-    .filter(item => {
-      const lessonNote = item.note
+  if(isGroupsLoading){
+    return <div>Загрузка</div>
+  }
 
-      if (lessonNote.includes('+') && lessonAge === 0) {
-        return true
-      }
-
-      if (lessonNote.includes('-')) {
-        let [start, finish] = lessonNote.split('-').map(item => parseInt(item))
-        return lessonAge >= start && (lessonAge <= finish || finish === undefined);
-      }
-    })
-  ]
   return (<div style={{display: "flex"}}>
     <EnhancedTable
       recordObj={records?.[lessonType]}
       setRecord={handleSetRecordSkills}
       columns={trialColumnNames}
-      rows={lessons.filter(ls => new Date(ls.date).toISOString().split('T')[0] === new Date(date).toISOString().split('T')[0])}
+      rows={lessons.filter(ls => equalDay(ls.date, date))}
       tableLabel={tableLabel}
     />
     <div style={{'paddingLeft': "1.4%"}}>
       <StaticDatePickerDemo lessons={lessons} setDate={setDate}/>
     </div>
-    {/*{groupsErr && <div>ОШИБКА</div>}*/}
-    {/*{isGroupsLoading && <div>ОШИБКА</div>}*/}
   </div>);
 }
-
+const equalDay = (day1, day2) => {
+  return new Date(day1).toISOString().split('T')[0] === new Date(day2).toISOString().split('T')[0]
+}
 
 export default TrialLessensComponent;

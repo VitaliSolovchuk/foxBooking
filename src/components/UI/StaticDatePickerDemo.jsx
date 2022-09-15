@@ -8,11 +8,13 @@ import { StaticDatePicker } from '@mui/x-date-pickers/StaticDatePicker';
 
 export default function StaticDatePickerDemo({lessons, setDate}) {
   const [value, setValue] = React.useState(dayjs());
-  const arrayOfDays = new Set(lessons.map(less => new Date(less.date).toISOString().split('T')[0]))
+  const arrayOfDays = new Set(lessons.map(less => less.date))
 
   const isHaveLessons = (date) => {
-    return !arrayOfDays.has(new Date(date).toISOString().split('T')[0]);
+    const calendarDay = new Date(date).toLocaleDateString('en-CA')
+    return !arrayOfDays.has(calendarDay);
   };
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <StaticDatePicker
@@ -28,4 +30,10 @@ export default function StaticDatePickerDemo({lessons, setDate}) {
       />
     </LocalizationProvider>
   );
+}
+
+const sameDay = (day1, day2) => {
+  return day1.getFullYear() === day2.getFullYear()
+    && day1.getDate() === day2.getDate()
+    && day1.getMonth() === day2.getMonth();
 }

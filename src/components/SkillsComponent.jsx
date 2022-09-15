@@ -1,8 +1,9 @@
 import React from 'react';
 import { groupColumnNames } from "../constants";
-import EnhancedTable from "./CustomTableComponent";
+import EnhancedTable from "./UI/CustomTableComponent";
 import { useFetching } from "../hooks/useFetching";
 import { useEffect, useState } from "react";
+import { useGroups } from "../hooks/userMemoFiltration";
 
 const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsLoad, controller}) => {
 
@@ -27,26 +28,27 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
   const [groups, setGroups] = useState([]); //groupLessons
   const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async () => {
 
+    setIsLoad(true)
     const groups = await controller.getSkillGroups()
     setGroups(groups);
     controller.setListCustomersInGroups(groups)
       .then(newGroups => setGroups(newGroups))
+    setIsLoad(false)
   })
 
   useEffect(() => {
     fetchGroups()
   }, [])
 
-  useEffect(() => {
-   if(isGroupsLoading){
-     setIsLoad(true)
-   }else{
-     setIsLoad(false)
-   }
-  }, [isGroupsLoading])
 
-  if(!groups || groups.length === 0){
+  const memoizedValue = useGroups(groups, lessonFormat)
+
+  if(!memoizedValue || memoizedValue.length === 0){
     return <div>ПУСТО</div>
+  }
+
+  if(isGroupsLoading){
+    return <div>Загрузка</div>
   }
 
   return (<div>
@@ -54,12 +56,9 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
       recordObj={records?.[lessonType]}
       setRecord={handleSetRecordSkills}
       columns={groupColumnNames}
-      rows={[...groups.filter(item => item?.custom_typeoflessons_ === (lessonFormat === "online" ? "Онлайн" : "Офлайн"))]}
+      rows={memoizedValue}
       tableLabel={tableLabel}
     />
-
-    {/*{groupsErr && <div>ОШИБКА</div>}*/}
-    {/*{isGroupsLoading && <div>ОШИБКА</div>}*/}
   </div>);
 }
 

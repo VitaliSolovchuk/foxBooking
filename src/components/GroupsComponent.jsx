@@ -1,8 +1,9 @@
 import React from 'react';
 import { groupColumnNames } from "../constants";
-import EnhancedTable from "./CustomTableComponent";
+import EnhancedTable from "./UI/CustomTableComponent";
 import { useFetching } from "../hooks/useFetching";
 import { useEffect, useState } from "react";
+import { useGroups } from "../hooks/userMemoFiltration";
 
 const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, controller}) => {
 
@@ -29,14 +30,15 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
 
 
   const [groups, setGroups] = useState([]); //groupLessons
-  const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async (level='') => {
+  const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async (level) => {
 
-    // TODO trial lessens
     const groups = await controller.getGroups(level)
 
+    setIsLoad(true)
     setGroups(groups);
     controller.setListCustomersInGroups(groups)
       .then(newGroups => setGroups(newGroups))
+    setIsLoad(false)
   })
 
   useEffect(() => {
@@ -44,25 +46,23 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
 
   }, [lessonConfig.level])
 
-  useEffect(() => {
-   if(isGroupsLoading){
-     setIsLoad(true)
-   }else{
-     setIsLoad(false)
-   }
-  }, [isGroupsLoading])
+  const memoizedValue = useGroups(groups, lessonConfig.lessonFormat)
 
-  if(!groups || groups.length === 0){
+  if(isGroupsLoading){
+    return <div>Загрузка</div>
+  }
+
+  if(!memoizedValue || memoizedValue.length === 0){
     return <div>ПУСТО</div>
   }
+
 
   return (<div>
     <EnhancedTable
       recordObj={records?.[lessonConfig.lessonType]}
       setRecord={handleSetRecordSkills}
       columns={groupColumnNames}
-      rows={[...groups.filter(item => item?.custom_typeoflessons_ === (lessonConfig.lessonFormat === "online" ? "Онлайн" : "Офлайн"))]}
-        // ...groups.filter(item => item?.custom_typeoflessons_ === (lessonConfig.lessonFormat === "online" ? "online" : "offline"))
+      rows={memoizedValue}
       tableLabel={tableLabel}
     />
 

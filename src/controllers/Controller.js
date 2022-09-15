@@ -12,7 +12,8 @@ class Controller {
 
     console.log("Controller, constructor", async_params)
     this.ALFA_TOKEN = async_params.ALFA_TOKEN
-    this.alfaService = new AlfaService(this.ALFA_TOKEN)
+    this.ALFA_REGULARS = async_params.ALFA_REGULARS
+    this.alfaService = new AlfaService(this.ALFA_TOKEN, this.ALFA_REGULARS)
     this.bitrixService = new BitrixService(async_params.BITRIX_DEAL)
   }
 
@@ -22,10 +23,12 @@ class Controller {
       // const ALFA_TOKEN = (await AlfaService.getToken()).data.token;
       // const BITRIX_DEAL = (await BitrixService.getDeal(dealId)).data.result;
       const ALFA_TOKEN = await AlfaService.getToken()
-      const BITRIX_DEAL = await BitrixService.getDeal(dealId)
-      const controller = new Controller({ ALFA_TOKEN, BITRIX_DEAL });
-      this.instance = controller;
+      const BITRIX_DEAL_PROMISE = BitrixService.getDeal(dealId);
+      const ALFA_REGULARS_PROMISE = AlfaService.getRegularLesson(ALFA_TOKEN)
 
+      const [BITRIX_DEAL, ALFA_REGULARS] = await Promise.all([BITRIX_DEAL_PROMISE, ALFA_REGULARS_PROMISE])
+      const controller = new Controller({ ALFA_TOKEN, ALFA_REGULARS, BITRIX_DEAL});
+      this.instance = controller;
     }
 
     return this.instance;
@@ -65,10 +68,7 @@ class Controller {
     const allGroups = await this.alfaService.getGroups(filter)
     allGroups.forEach(group => {
       // injection timetable from alfa_regulars
-      // TODO get regulars
-      group.timetable = alfa_regulars.filter(reg => reg.related_id === group.id)
-
-      group.timetableStr = AlfaService.getGroupTimetable(group.timetable)
+      this.alfaService.getGroupTimetable(group)
       group.labelStr = AlfaService.getGroupLabel(group)
 
       // injection roomStr
@@ -102,9 +102,8 @@ class Controller {
     allGroups.forEach(group => {
       // injection timetable from alfa_regulars
       // TODO get regulars
-      group.timetable = alfa_regulars.filter(reg => reg.related_id === group.id)
 
-      group.timetableStr = AlfaService.getGroupTimetable(group.timetable)
+      this.alfaService.getGroupTimetable(group)
       group.labelStr = AlfaService.getGroupLabel(group)
 
       // injection roomStr
@@ -134,7 +133,7 @@ class Controller {
     for (const group of groups) {
       if(newGroups.length > 1){
         // ограничение на 5 запросов в alfaCrm на стороне альфы
-        await delay(200)
+        await delay(150)
       }
 
       const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(group.id)
@@ -147,7 +146,7 @@ class Controller {
     return newGroups
   }
   async saveToGroup(group, groupType) { //customerId
-    console.log("Controller, saveToGroup")
+    // console.log("Controller, saveToGroup")
     const customerId = this.bitrixService.customerId
     const userParticipant = group.participants.find(user => user.customer_id === customerId)
 
@@ -169,8 +168,8 @@ class Controller {
     const [resAlfa, resBitrix] = await Promise.all([promiseAlfa, promiseBitrix])
 
   }
-  async saveToLessen(lessenId) { //customerId
-    console.log("Controller, saveToLessen")
+  async saveToLessen(lessenId) {
+    // console.log("Controller, saveToLessen")
     const customerId = this.bitrixService.customerId
 
     // get lesson
@@ -195,7 +194,7 @@ class Controller {
   }
 
   async deleteFromGroup(groupId, groupType) { //customerId
-    console.log("Controller, deleteFromGroup")
+    // console.log("Controller, deleteFromGroup")
     const customerId = this.bitrixService.customerId
 
     const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(groupId)
@@ -212,10 +211,10 @@ class Controller {
     }
 
     const [res, res2] = await Promise.all([promiseAlfa, promiseBitrix])
-    console.log(res, res2)
+    // console.log(res, res2)
   }
   async deleteFromGroupWithoutGroupId(groupName, groupType, groups) { //customerId
-    console.log("Controller, deleteFromGroupWithoutGroupId")
+    // console.log("Controller, deleteFromGroupWithoutGroupId")
     const customerId = this.bitrixService.customerId
 
     // 1 search group
@@ -223,7 +222,7 @@ class Controller {
     const groupCustomerRecs = groups
       .filter( gr => gr.name === groupName)
       .filter( gr => gr.participants.find(user => user.customer_id === customerId))
-    console.log('groupCustomerRecs', groupCustomerRecs)
+    // console.log('groupCustomerRecs', groupCustomerRecs)
     // 1.2 get from alfa
     if(groupCustomerRecs.length === 0){
       // достать группы в интернете
@@ -238,7 +237,7 @@ class Controller {
 
       //положить в общий список
       groupCustomerRecs.push(...userGroups)
-      console.log('groupCustomerRecs2', groupCustomerRecs)
+      // console.log('groupCustomerRecs2', groupCustomerRecs)
     }
 
     // 2.1 если группа нашлась одна
@@ -263,7 +262,7 @@ class Controller {
   }
 
   async deleteFromLessen(lessenId) {
-    console.log("Controller, deleteFromLessen")
+    // console.log("Controller, deleteFromLessen")
     const customerId = this.bitrixService.customerId
 
     // get lesson

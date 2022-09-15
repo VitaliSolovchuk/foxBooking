@@ -34,7 +34,7 @@ export default class BitrixService {
     const _lessonData = 'UF_CRM_1594925394614'
     const _lessonFormat = 'UF_CRM_1601465549030'
     const lessonFormat = (bitrix_formats.find(level => +level.value === +this.DEAL[_lessonFormat])).label
-    console.log(lessonFormat,'lessonFormat')
+
     return {
       skills: {
         id: +this.DEAL[_groupSkillId] || null ,
@@ -59,7 +59,7 @@ export default class BitrixService {
 
   getDealConfig() {
     const categiry = this.DEAL.CATEGORY_ID
-    // const stage = this.DEAL.STAGE_ID
+    const stage = this.DEAL.STAGE_ID
     const levelId = this.DEAL['UF_CRM_1593865305969']
     const level = (bitrix_levels.find(lv => lv.value === levelId)).label
     const age = getAgeFromBirthday(this.DEAL['UF_CRM_1595188876144'])
@@ -68,9 +68,15 @@ export default class BitrixService {
       alert('не указан id лида из альфы, модуль не будет сохранять запись')
     }
 
-    // const type = categiry === '7' ? 'skills' : "trial"
-    const type = "trial"
-    const format = type === 'skills' ? 'offline' : 'online'
+    const type = (categiry === '7')
+    ? 'skills'
+    : (stage === 'C1:PREPAYMENT_INVOICE') ? "trial" : 'group'
+    const format = (type === 'skills')
+    ? 'offline'
+    : (type === 'trial') ? 'online' : ''
+
+    // const type = "trial"
+    // const format = ''
     return {
       lessonType: type,
       lessonFormat: format,

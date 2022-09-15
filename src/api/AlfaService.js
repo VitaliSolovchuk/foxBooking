@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ALFA_DAMAIN, ALFA_EMAIL, ALFA_API_KEY, alfa_rooms } from "../constants";
+import { ALFA_DAMAIN, ALFA_EMAIL, ALFA_API_KEY, alfa_rooms, alfa_regulars } from "../constants";
 
 
 
@@ -15,8 +15,10 @@ const headers = (token) => {
 // TODO https://sirfox.s20.online/v2api/1/regular-lesson/index?
 export default class AlfaService {
 
-  constructor(token) {
+  constructor(token, regulars) {
     this.token = token
+    this.regulars = regulars
+    //regularsPromise
   }
 
   static async getToken() {
@@ -26,13 +28,24 @@ export default class AlfaService {
 
     return response.data.token
   }
+  static async getRegularLesson(token) {
+      const response = await axios.post(ALFA_DAMAIN + 'regular-lesson/index?', {}, {
+        headers: headers(token),
+      })
+
+      return response.data.items
+  }
   static getGroupLabel(group) {
     return `${group.name} с расписанием ${group.timetableStr}`
 
   }
-  static getGroupTimetable(timetable) {
+  getGroupTimetable(group) {
+    group.timetable = alfa_regulars.filter(reg => reg.related_id === group.id)
+    if(group.timetable.length === 0){
+      group.timetable = this.regulars.filter(reg => reg.related_id === group.id)
+    }
     let timetableStr = ''
-    timetable.forEach(tm => {
+    group.timetable.forEach(tm => {
       timetableStr += '(' + _getWeekDay(tm['day']) + ')' + tm['time_from_v'] + '-' + tm['time_to_v'] + ' '
     })
 
@@ -40,7 +53,8 @@ export default class AlfaService {
       timetableStr = "не установлено"
     }
 
-    return timetableStr
+    group.timetableStr = timetableStr
+    return
     function _getWeekDay(day) {
       let days = ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'];
 
@@ -116,7 +130,6 @@ export default class AlfaService {
     return res
   }
 
-  // todo get all cgi https://sirfox.s20.online/v2api/1/cgi/index?group_id=1000
   async getListCustomersInGroup (groupId) {
     return await axios.post(ALFA_DAMAIN + 'cgi/index?' + `group_id=${groupId}`, {}, {
       headers: headers(this.token),
@@ -180,7 +193,7 @@ export default class AlfaService {
       params
     })
 
-    console.log(response, 'updateLessons')
+    // console.log(response, 'updateLessons')
     return response.data
   }
 
@@ -192,7 +205,7 @@ export default class AlfaService {
       params
     })
 
-    console.log(response, 'updateCustomer')
+    // console.log(response, 'updateCustomer')
     return response.data
   }
 

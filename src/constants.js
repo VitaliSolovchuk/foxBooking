@@ -5,7 +5,7 @@ export const ALFA_EMAIL = 'hello@bizbricks.by';
 
 export const BITRIX_AUTH = "https://sirfox.bitrix24.by/rest/147/q286xn32y3t8s3br/";
 
-export const lessonFormatValues = [{ value: "online", label: "online" }, { value: "offline", label: "offline" },]
+export const lessonFormatValues = [{ value: "", label: 'none' }, { value: "online", label: "online" }, { value: "offline", label: "offline" },]
 export const lessonTypeValues = [{ value: "trial", label: "trial" }, { value: "group", label: "group" }, {
   value: "skills", label: "skills"
 },]

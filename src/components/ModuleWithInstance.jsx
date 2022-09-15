@@ -20,7 +20,7 @@ const ModuleWithInstance = ({controller, isLoad, setIsLoad}) => {
 
     <div className="App-body">
       <div style={{ padding: '2%' }}>
-        {lessonConfig.lessonType === 'skills' && lessonConfig.lessonFormat && <SkillsComponent
+        {lessonConfig.lessonType === 'skills' && <SkillsComponent
           lessonType={lessonConfig.lessonType}
           lessonFormat={lessonConfig.lessonFormat}
           records={records}
@@ -29,14 +29,13 @@ const ModuleWithInstance = ({controller, isLoad, setIsLoad}) => {
           setIsLoad={setIsLoad}
         />}
 
-        {lessonConfig.lessonType === 'group' && lessonConfig.lessonFormat && <GroupsComponent
+        {lessonConfig.lessonType === 'group' && <GroupsComponent
           lessonConfig={lessonConfig}
           records={records}
           setRecords={setRecords}
           controller={controller}
           setIsLoad={setIsLoad}
         />}
-
 
         {lessonConfig.lessonType === 'trial' && <TrialLessensComponent
           lessonType={lessonConfig.lessonType}
