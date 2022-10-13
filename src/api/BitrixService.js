@@ -73,7 +73,7 @@ export default class BitrixService {
     : (stage === 'C1:PREPAYMENT_INVOICE') ? "trial" : 'group'
     const format = (type === 'skills')
     ? 'offline'
-    : (type === 'trial') ? 'online' : ''
+    : ''
 
     // const type = "trial"
     // const format = ''

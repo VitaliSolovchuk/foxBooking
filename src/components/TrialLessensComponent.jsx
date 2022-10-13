@@ -24,7 +24,6 @@ const TrialLessensComponent = ({ lessonType, lessonFormat, lessonAge, records, s
 
   }
 
-
   const [date, setDate] = useState(Date());
   const [groups, setGroups] = useState([]); //groupLessons
   const [fetchGroups, isGroupsLoading, groupsErr] = useFetching(async () => {
@@ -42,13 +41,14 @@ const TrialLessensComponent = ({ lessonType, lessonFormat, lessonAge, records, s
 
   const lessons = useLessons(groups, lessonFormat, 'formatStr', lessonAge)
 
+  if(isGroupsLoading){
+    return <div>Загрузка</div>
+  }
+
   if(!lessons || lessons.length === 0){
     return <div>ПУСТО</div>
   }
 
-  if(isGroupsLoading){
-    return <div>Загрузка</div>
-  }
 
   return (<div style={{display: "flex"}}>
     <EnhancedTable

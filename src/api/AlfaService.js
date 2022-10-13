@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ALFA_DAMAIN, ALFA_EMAIL, ALFA_API_KEY, alfa_rooms, alfa_regulars } from "../constants";
+import { ALFA_DAMAIN, ALFA_EMAIL, ALFA_API_KEY, alfa_rooms } from "../constants";
 
 
 
@@ -40,10 +40,9 @@ export default class AlfaService {
 
   }
   getGroupTimetable(group) {
-    group.timetable = alfa_regulars.filter(reg => reg.related_id === group.id)
-    if(group.timetable.length === 0){
-      group.timetable = this.regulars.filter(reg => reg.related_id === group.id)
-    }
+
+    group.timetable = this.regulars.filter(reg => reg.related_id === group.id)
+
     let timetableStr = ''
     group.timetable.forEach(tm => {
       timetableStr += '(' + _getWeekDay(tm['day']) + ')' + tm['time_from_v'] + '-' + tm['time_to_v'] + ' '

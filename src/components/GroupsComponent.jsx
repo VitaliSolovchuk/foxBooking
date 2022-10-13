@@ -62,7 +62,7 @@ const GroupsComponent = ({ lessonConfig, records, setRecords, setIsLoad, control
       recordObj={records?.[lessonConfig.lessonType]}
       setRecord={handleSetRecordSkills}
       columns={groupColumnNames}
-      rows={memoizedValue}
+      rows={[...memoizedValue]}
       tableLabel={tableLabel}
     />
 

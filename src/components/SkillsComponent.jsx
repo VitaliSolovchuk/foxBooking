@@ -43,13 +43,14 @@ const SkillsComponent = ({ lessonType, lessonFormat, records, setRecords, setIsL
 
   const memoizedValue = useGroups(groups, lessonFormat)
 
+  if(isGroupsLoading){
+    return <div>Загрузка</div>
+  }
+
   if(!memoizedValue || memoizedValue.length === 0){
     return <div>ПУСТО</div>
   }
 
-  if(isGroupsLoading){
-    return <div>Загрузка</div>
-  }
 
   return (<div>
     <EnhancedTable
