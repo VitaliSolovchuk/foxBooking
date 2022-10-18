@@ -28,6 +28,17 @@ export default class AlfaService {
 
     return response.data.token
   }
+  
+  static async getLevel(){
+    const response=await axios.get("https://sirfox.bitrix24.by/rest/147/1lssuwtatgzmsug8/crm.deal.userfield.get.json?ID=427");
+    return response.data.result.LIST.map((el)=>{
+      return{
+        NAME:el.VALUE,
+        VALUE:el.ID
+      }
+    })
+  }
+ 
   static async getRegularLesson(token) {
       const response = await axios.post(ALFA_DAMAIN + 'regular-lesson/index?', {}, {
         headers: headers(token),
