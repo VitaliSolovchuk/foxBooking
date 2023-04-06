@@ -199,7 +199,6 @@ export default class AlfaService {
       params
     })
 
-    // console.log(response, 'updateLessons')
     return response.data
   }
 
@@ -211,7 +210,6 @@ export default class AlfaService {
       params
     })
 
-    // console.log(response, 'updateCustomer')
     return response.data
   }
 

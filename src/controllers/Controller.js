@@ -59,7 +59,6 @@ class Controller {
     return allLessons;
   }
   async getSkillGroups(dealType = 'skills', format) {
-    // console.log("Controller, getSkillGroups")
     const note = `${format || ""}-${dealType || ""}`
 
     const filter = {
@@ -93,7 +92,6 @@ class Controller {
     return allGroups;
   }
   async getGroups(dealType) {
-    // console.log("getGroups")
 
     const filter = {
       "name": dealType,
@@ -147,8 +145,7 @@ class Controller {
     }
     return newGroups
   }
-  async saveToGroup(group, groupType) { //customerId
-    // console.log("Controller, saveToGroup")
+  async saveToGroup(group, groupType) {
     const customerId = this.bitrixService.customerId
     const userParticipant = group.participants.find(user => user.customer_id === customerId)
 
@@ -163,7 +160,7 @@ class Controller {
     if(groupType === "skills") {
       promiseBitrix = this.bitrixService.writeInGroupSkills(group.id, group.name, group.timetableStr, group.b_date)
     }
-    if(groupType === "group") {
+    if(groupType === "group" || groupType === "vocational") {
       promiseBitrix = this.bitrixService.writeInGroup(group.id, group.name, group.timetableStr, group.b_date)
     }
 
@@ -171,21 +168,19 @@ class Controller {
 
   }
   async saveToLessen(lessenId) {
-    // console.log("Controller, saveToLessen")
     const customerId = this.bitrixService.customerId
 
-    // get lesson
     const filter = {id: lessenId, lesson_type_id: 3, status: 1 }
     const lesson = (await this.alfaService.getLessons(filter))[0]
     this.alfaService.injectionRoomToLesson(lesson)
 
-    if(lesson.status !== 1) { // searching
+    if(lesson.status !== 1) {
       //TODO thow error
     }
 
     // updateCustomer
     const customerData = {id: customerId, is_study: 0, lead_status_id: 2, e_date: '2030-10-10'}
-    const customer = await this.alfaService.updateCustomer(customerData)
+    await this.alfaService.updateCustomer(customerData)
 
     // updateLesson
     filter.customer_ids = lesson.customer_ids.concat(customerId)
@@ -195,8 +190,7 @@ class Controller {
 
   }
 
-  async deleteFromGroup(groupId, groupType) { //customerId
-    // console.log("Controller, deleteFromGroup")
+  async deleteFromGroup(groupId, groupType) { 
     const customerId = this.bitrixService.customerId
 
     const customersInGroupResponse = await this.alfaService.getListCustomersInGroup(groupId)
@@ -212,11 +206,9 @@ class Controller {
       promiseBitrix = this.bitrixService.writeInGroup('', '', '', '')
     }
 
-    const [res, res2] = await Promise.all([promiseAlfa, promiseBitrix])
-    // console.log(res, res2)
+    await Promise.all([promiseAlfa, promiseBitrix])
   }
-  async deleteFromGroupWithoutGroupId(groupName, groupType, groups) { //customerId
-    // console.log("Controller, deleteFromGroupWithoutGroupId")
+  async deleteFromGroupWithoutGroupId(groupName, groupType, groups) {
     const customerId = this.bitrixService.customerId
 
     // 1 search group
@@ -224,7 +216,7 @@ class Controller {
     const groupCustomerRecs = groups
       .filter( gr => gr.name === groupName)
       .filter( gr => gr.participants.find(user => user.customer_id === customerId))
-    // console.log('groupCustomerRecs', groupCustomerRecs)
+      
     // 1.2 get from alfa
     if(groupCustomerRecs.length === 0){
       // достать группы в интернете
@@ -239,7 +231,6 @@ class Controller {
 
       //положить в общий список
       groupCustomerRecs.push(...userGroups)
-      // console.log('groupCustomerRecs2', groupCustomerRecs)
     }
 
     // 2.1 если группа нашлась одна
@@ -258,13 +249,12 @@ class Controller {
 
       await Promise.all([promiseAlfa, promiseBitrix])
     }else {
-      alert ('больше одной группы нашло - удалите вручную')
+      alert ('больше одной группы найдено - удалите вручную')
     }
 
   }
 
   async deleteFromLessen(lessenId) {
-    // console.log("Controller, deleteFromLessen")
     const customerId = this.bitrixService.customerId
 
     // get lesson
@@ -285,10 +275,6 @@ class Controller {
     await this.alfaService.updateLessons({...filter, customer_ids: lesson.customer_ids})
 
   }
-  // async getAllGroupsTest(){
-  //   const allGroups = await this.alfaService.getGroups({ pageSize: 50 })
-  //   return allGroups
-  // }
 
   async getLongTermGroups(dealType, format, level) {
     const note = `${format || ""} ${dealType || ""}`

@@ -116,13 +116,11 @@ const EnhancedTableToolbar = (props) => {
   const isSetRecord = (!!selected || !!record)
 
   const handleSave = () => {
-    // TODO delete console.log("event handleSave");
     setRecord(selected).then(() => setSelected([]))
 
   };
 
   const handleDelete = () => {
-    // TODO delete console.log("event handleDelete");
     setRecord()
   };
   return (
@@ -199,8 +197,7 @@ export default function EnhancedTable({ recordObj, setRecord, tableLabel, column
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
 
-  const handleRequestSort = (event, property) => {
-    // console.log(event, property)
+  const handleRequestSort = (_event, property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
@@ -214,7 +211,7 @@ export default function EnhancedTable({ recordObj, setRecord, tableLabel, column
     const selectedIndex = selected.indexOf(name);
     let newSelected = [];
 
-    if (selectedIndex === -1 && !record) { //
+    if (selectedIndex === -1 && !record) {
       newSelected = newSelected.concat([], name);
     } else if (selectedIndex === 0 && record) {
       newSelected = newSelected.concat(selected.slice(1));

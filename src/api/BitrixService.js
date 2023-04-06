@@ -67,6 +67,7 @@ export default class BitrixService {
     const level = this.customerLevel
     const age = getAgeFromBirthday(this.age)
     const customerId = this.customerId
+    
     if (!this.customerId){
       alert('не указан id лида из альфы, модуль не будет сохранять запись')
     }
