@@ -271,10 +271,10 @@ class Controller {
     }
 
     // updateLesson
-    const newCustomersIds = lesson.customer_ids.filer(e => e !== customerId)
-    const lessonProm = this.alfaService.updateLessons({...filter, customer_ids: lesson.newCustomersIds})
+    const newCustomersIds = lesson.customer_ids.filter(e => e !== customerId);
+    const lessonProm = this.alfaService.updateLessons({...filter, customer_ids: newCustomersIds})
     // updateCustomer
-    const customerData = {id: customerId, is_study: 0, lead_status_id: 3, e_date: '2030-10-10'}
+    const customerData = {id: customerId, lead_status_id: 3, e_date: '2030-10-10'}
     const leadProm = this.alfaService.updateCustomer(customerData)
 
     await Promise.all([lessonProm, leadProm])
